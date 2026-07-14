@@ -97,7 +97,7 @@
         <div class="view-actions"><div><h2>Careers Page Settings</h2><p>Update the company identity and public careers page content.</p></div></div>
         <form id="settingsForm" class="panel settings-form">
           <div class="settings-grid">
-            <label>Company Logo<input class="input" id="settingLogo" type="file" accept="image/*" /><small>PNG/JPG recommended. In demo mode, logo is stored in this browser.</small></label>
+            <label>Company Logo<input class="input" id="settingLogo" type="file" accept="image/*" /><small>PNG/JPG recommended. Live mode stores the logo in Google Drive; demo mode stores it in this browser.</small></label>
             <label>Company Name<input class="input" id="settingCompanyName" required /></label>
             <label>Careers Hero Title<input class="input" id="settingHeroTitle" /></label>
             <label>Careers Hero Subtitle<textarea class="input" id="settingHeroSubtitle" rows="3"></textarea></label>
@@ -107,6 +107,8 @@
             <label>Contact Number<input class="input" id="settingContact" /></label>
             <label>HR Notification Email<input class="input" id="settingHrEmail" type="email" placeholder="hr@company.com" /><small>Receives a notification for every new application.</small></label>
             <label>Facebook / Messenger Link<input class="input" id="settingFacebookLink" type="url" placeholder="https://m.me/yourpage" /><small>This controls the floating chat button on the public careers page.</small></label>
+            <label>Google Maps Share Link<input class="input" id="settingMapsLink" type="url" value="https://maps.app.goo.gl/k6s9dzqoc3AuiTNH6" placeholder="https://maps.app.goo.gl/..." /><small>Used by the Open in Google Maps and interview directions buttons.</small></label>
+            <label>Google Maps Embed Link<input class="input" id="settingMapsEmbedUrl" type="url" value="https://www.google.com/maps?q=14.7031475,120.9715062&z=17&output=embed" placeholder="https://www.google.com/maps?...&output=embed" /><small>Used for the map displayed on the public Careers page.</small></label>
           </div>
           <button class="btn" type="submit">Save Settings</button>
           <span id="settingsSaved" class="saved-message hidden">Settings saved.</span>
