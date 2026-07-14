@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supermax Careers</title>
+  <meta name="description" content="Careers and job openings at Supermax Enterprise Trading Corp." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Careers home">
+      <div class="brand-logo" id="brandLogoWrap"><img id="brandLogo" alt="Company logo" /></div>
+      <div>
+        <strong id="brandName">Supermax Enterprise Trading Corp.</strong>
+        <span>Careers</span>
+      </div>
+    </a>
+    <nav>
+      <a href="#jobs">Open Jobs</a>
+      <a href="#track">Track Application</a>
+      <a href="#about">About</a>
+    </nav>
+    <a class="btn btn-small" href="#jobs">View Openings</a>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-glow hero-glow-a"></div>
+      <div class="hero-glow hero-glow-b"></div>
+      <div class="hero-content">
+        <span class="eyebrow">SUPERMAX CAREERS</span>
+        <h1 id="heroTitle">Build your career with us.</h1>
+        <p id="heroSubtitle">Join a growing team helping power businesses and communities through dependable solar products, logistics, and service.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#jobs">Explore Job Openings</a>
+          <a class="btn btn-ghost" href="#track">Track My Application</a>
+        </div>
+        <div class="hero-trust">
+          <span>✓ Simple online application</span>
+          <span>✓ Resume upload</span>
+          <span>✓ Application status tracking</span>
+        </div>
+      </div>
+      <aside class="hero-card">
+        <div class="mini-label">NOW HIRING</div>
+        <div id="heroJobList" class="hero-job-list"></div>
+        <a href="#jobs" class="text-link">See all openings →</a>
+      </aside>
+    </section>
+
+    <section class="section" id="jobs">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow dark">CURRENT OPPORTUNITIES</span>
+          <h2>Find your next role</h2>
+          <p>Browse our active openings and submit your application online.</p>
+        </div>
+        <div class="job-filter-wrap">
+          <input id="jobSearch" class="input" type="search" placeholder="Search jobs..." />
+          <select id="jobDepartment" class="input"><option value="">All departments</option></select>
+        </div>
+      </div>
+      <div id="jobsGrid" class="jobs-grid"></div>
+      <div id="jobsEmpty" class="empty-state hidden">No active job openings match your search.</div>
+    </section>
+
+    <section class="section section-alt" id="track">
+      <div class="track-layout">
+        <div>
+          <span class="eyebrow dark">APPLICATION TRACKER</span>
+          <h2>Check your application status</h2>
+          <p>Enter the tracking ID provided after submitting your application.</p>
+          <div class="track-form">
+            <input id="trackingIdInput" class="input" placeholder="Example: SMX-2026-000145" />
+            <button id="trackBtn" class="btn">Track Application</button>
+          </div>
+          <p class="helper">Your tracking ID is unique to your application. Keep it for future reference.</p>
+        </div>
+        <div id="trackResult" class="track-card track-placeholder">
+          <div class="track-icon">⌕</div>
+          <h3>Your application journey</h3>
+          <p>Status updates and interview details will appear here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="about-grid">
+        <div>
+          <span class="eyebrow dark">ABOUT SUPERMX</span>
+          <h2 id="aboutTitle">Grow with a team that gets things done.</h2>
+        </div>
+        <div>
+          <p id="companyDescription">Supermax Enterprise Trading Corp. supports the solar industry through product distribution, operations, training, and customer service. We value reliable people, continuous learning, and teamwork.</p>
+          <div class="info-list">
+            <div><span>Location</span><strong id="companyAddress">25 F. Alarcon St., Maysan, Valenzuela City</strong></div>
+            <div><span>Contact</span><strong id="companyContact">09069484229</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand">
+      <div class="brand-logo"><img id="footerLogo" alt="Company logo" /></div>
+      <div>
+        <strong id="footerCompanyName">Supermax Enterprise Trading Corp.</strong>
+        <span>Careers Portal</span>
+      </div>
+    </div>
+    <p>© <span id="year"></span> <span id="footerCompanyInline">Supermax Enterprise Trading Corp.</span></p>
+  </footer>
+
+  <a id="messengerChatButton" class="messenger-chat hidden" href="#" target="_blank" rel="noopener" aria-label="Chat with us on Messenger">
+    <span class="messenger-icon">💬</span>
+    <span class="messenger-text"><strong>Need help?</strong><small>Chat with us</small></span>
+  </a>
+
+  <div id="jobModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel">
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+      <div id="jobModalContent"></div>
+    </div>
+  </div>
+
+  <div id="applyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="applyModalTitle">
+    <div class="modal-backdrop" data-close-apply></div>
+    <div class="modal-panel modal-wide">
+      <button class="modal-close" data-close-apply aria-label="Close">×</button>
+      <div class="modal-heading">
+        <span class="eyebrow dark">ONLINE APPLICATION</span>
+        <h2 id="applyModalTitle">Apply for <span id="applyJobName"></span></h2>
+        <p>Complete the form below. Fields marked * are required.</p>
+      </div>
+      <form id="applicationForm" class="application-form">
+        <input type="hidden" id="applyJobId" />
+        <div class="form-grid">
+          <label>Full Name *<input class="input" id="fullName" required /></label>
+          <label>Email Address *<input class="input" id="email" type="email" required /></label>
+          <label>Mobile Number *<input class="input" id="mobile" required /></label>
+          <label>Address *<input class="input" id="address" required /></label>
+          <label>Highest Educational Attainment
+            <select class="input" id="education">
+              <option>High School</option><option>Senior High School</option><option>Vocational / TESDA</option>
+              <option>College Undergraduate</option><option>College Graduate</option><option>Postgraduate</option>
+            </select>
+          </label>
+          <label>Years of Work Experience<input class="input" id="experience" placeholder="Example: 2 years" /></label>
+          <label>Expected Salary<input class="input" id="expectedSalary" placeholder="Optional" /></label>
+          <label>Available Start Date<input class="input" id="startDate" type="date" /></label>
+        </div>
+        <label>Short Introduction / Message<textarea class="input" id="message" rows="4" placeholder="Tell us briefly about your experience and why you are applying."></textarea></label>
+        <label class="resume-field">Resume *<input class="input" id="resume" type="file" accept=".pdf,.doc,.docx" required />
+          <small>Accepted: PDF, DOC, DOCX. Maximum 5 MB.</small>
+        </label>
+        <label class="consent"><input type="checkbox" id="consent" required /> I confirm that the information provided is accurate and I consent to the processing of my application data for recruitment purposes.</label>
+        <button id="submitApplicationBtn" class="btn btn-full" type="submit">Submit Application</button>
+        <p id="applicationError" class="form-error hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel success-panel">
+      <div class="success-icon">✓</div>
+      <span class="eyebrow dark">APPLICATION RECEIVED</span>
+      <h2>Thank you for applying!</h2>
+      <p>Your application has been submitted successfully.</p>
+      <p id="successEmailNote" class="success-email-note">We will also send an application confirmation to your email.</p>
+      <div class="tracking-code-box">
+        <span>Your Tracking ID</span>
+        <strong id="successTrackingId"></strong>
+        <button id="copyTrackingBtn" class="btn btn-ghost-dark btn-small">Copy Tracking ID</button>
+      </div>
+      <p class="helper">Save this tracking ID. You will need it to check your application status.</p>
+      <button id="closeSuccessBtn" class="btn">Done</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
