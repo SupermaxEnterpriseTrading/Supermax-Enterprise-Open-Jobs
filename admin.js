@@ -2,12 +2,80 @@
   if (!document.getElementById("adminApp")) return;
   const S = window.SMX, $ = id => document.getElementById(id);
   let settings={}, jobs=[], applicants=[], selectedApplicant=null;
+  let refreshTimer=null, isRefreshingApplicants=false;
+  const newApplicantIds=new Set();
+  const AUTO_REFRESH_MS=15000;
 
   const titles={dashboard:"Dashboard",jobs:"Job Postings",applicants:"Applicants",settings:"Settings"};
 
   async function loadAll(){
     [settings,jobs,applicants]=await Promise.all([S.getSettings(),S.getJobs(true),S.getApplicants()]);
     applyBrand();renderDashboard();renderJobsTable();setupStatusFilter();renderApplicants();fillSettings();
+    updateRefreshStatus();
+  }
+
+  function formatRefreshTime(date=new Date()){
+    return new Intl.DateTimeFormat("en-PH",{hour:"numeric",minute:"2-digit",second:"2-digit"}).format(date);
+  }
+
+  function updateRefreshStatus(message=""){
+    const el=$("applicantRefreshStatus");
+    if(!el)return;
+    el.textContent=message||`Last updated: ${formatRefreshTime()} · Auto-refresh every 15 seconds`;
+  }
+
+  function showAdminToast(message){
+    let toast=document.getElementById("adminRefreshToast");
+    if(!toast){
+      toast=document.createElement("div");
+      toast.id="adminRefreshToast";
+      toast.className="admin-refresh-toast";
+      document.body.appendChild(toast);
+    }
+    toast.textContent=message;
+    toast.classList.add("show");
+    clearTimeout(showAdminToast.timer);
+    showAdminToast.timer=setTimeout(()=>toast.classList.remove("show"),3500);
+  }
+
+  async function refreshApplicants({notifyNew=true,manual=false}={}){
+    if(isRefreshingApplicants)return;
+    isRefreshingApplicants=true;
+    const button=$("refreshApplicantsBtn");
+    const previousIds=new Set(applicants.map(a=>a.id));
+    if(button){button.disabled=true;button.textContent="↻ Refreshing...";}
+    updateRefreshStatus(manual?"Refreshing applicants...":"Checking for new applications...");
+    try{
+      const latest=await S.getApplicants();
+      const added=latest.filter(a=>!previousIds.has(a.id));
+      added.forEach(a=>newApplicantIds.add(a.id));
+      applicants=latest;
+      renderApplicants();
+      renderDashboard();
+      renderJobsTable();
+      updateRefreshStatus();
+      if(notifyNew&&added.length){
+        showAdminToast(added.length===1?"🔔 New application received!":`🔔 ${added.length} new applications received!`);
+      }else if(manual){
+        showAdminToast("Applicants are up to date.");
+      }
+    }catch(error){
+      console.error("Applicant refresh failed:",error);
+      updateRefreshStatus("Refresh failed · Auto-retry in 15 seconds");
+      if(manual)showAdminToast("Unable to refresh applicants. Please try again.");
+    }finally{
+      isRefreshingApplicants=false;
+      if(button){button.disabled=false;button.textContent="↻ Refresh Applicants";}
+    }
+  }
+
+  function startApplicantAutoRefresh(){
+    stopApplicantAutoRefresh();
+    refreshTimer=setInterval(()=>refreshApplicants({notifyNew:true}),AUTO_REFRESH_MS);
+  }
+
+  function stopApplicantAutoRefresh(){
+    if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}
   }
   function applyBrand(){
     $("adminCompanyName").textContent=settings.companyName;
@@ -46,7 +114,7 @@
   function renderApplicants(){
     const q=$("applicantSearch").value.trim().toLowerCase(), status=$("applicantStatusFilter").value;
     const list=applicants.filter(a=>(!q||`${a.fullName} ${a.jobTitle} ${a.trackingId} ${a.email}`.toLowerCase().includes(q))&&(!status||a.status===status)).sort((a,b)=>new Date(b.appliedAt)-new Date(a.appliedAt));
-    $("applicantsTableBody").innerHTML=list.map(a=>`<tr><td class="table-primary"><strong>${S.escapeHtml(a.fullName)}</strong><span>${S.escapeHtml(a.email)} · ${S.escapeHtml(a.mobile)}</span></td><td>${S.escapeHtml(a.jobTitle)}</td><td>${S.formatDate(a.appliedAt)}</td><td><span class="status-tag ${S.statusSlug(a.status)}">${S.escapeHtml(a.status)}</span></td><td>${S.escapeHtml(a.trackingId)}</td><td><button class="table-action" data-view-applicant="${a.id}">Open</button></td></tr>`).join("")||`<tr><td colspan="6">No applicants found.</td></tr>`;
+    $("applicantsTableBody").innerHTML=list.map(a=>`<tr class="${newApplicantIds.has(a.id)?"new-applicant-row":""}"><td class="table-primary"><strong>${S.escapeHtml(a.fullName)} ${newApplicantIds.has(a.id)?'<span class="new-applicant-badge">NEW</span>':""}</strong><span>${S.escapeHtml(a.email)} · ${S.escapeHtml(a.mobile)}</span></td><td>${S.escapeHtml(a.jobTitle)}</td><td>${S.formatDate(a.appliedAt)}</td><td><span class="status-tag ${S.statusSlug(a.status)}">${S.escapeHtml(a.status)}</span></td><td>${S.escapeHtml(a.trackingId)}</td><td><button class="table-action" data-view-applicant="${a.id}">Open</button></td></tr>`).join("")||`<tr><td colspan="6">No applicants found.</td></tr>`;
   }
   function fillSettings(){
     $("settingCompanyName").value=settings.companyName||"";
@@ -87,7 +155,9 @@
   }
 
   function openApplicant(id){
+    newApplicantIds.delete(id);
     selectedApplicant=applicants.find(a=>a.id===id); if(!selectedApplicant)return;
+    renderApplicants();
     const a=selectedApplicant;
     $("applicantDetails").innerHTML=`
       <div class="applicant-head"><div><span class="eyebrow dark">${S.escapeHtml(a.trackingId)}</span><h2>${S.escapeHtml(a.fullName)}</h2><p>${S.escapeHtml(a.jobTitle)} · Applied ${S.formatDate(a.appliedAt,true)}</p></div><span class="status-tag ${S.statusSlug(a.status)}">${S.escapeHtml(a.status)}</span></div>
@@ -154,15 +224,16 @@
   $("loginForm").addEventListener("submit",async e=>{
     e.preventDefault();
     if($("adminPin").value!==(S.CFG.ADMIN_PIN||"1234")){$("loginError").textContent="Incorrect admin PIN.";$("loginError").classList.remove("hidden");return;}
-    sessionStorage.setItem("smx_admin","1");$("loginScreen").classList.add("hidden");$("adminApp").classList.remove("hidden");await loadAll();
+    sessionStorage.setItem("smx_admin","1");$("loginScreen").classList.add("hidden");$("adminApp").classList.remove("hidden");await loadAll();startApplicantAutoRefresh();
   });
-  $("logoutBtn").addEventListener("click",()=>{sessionStorage.removeItem("smx_admin");location.reload();});
+  $("logoutBtn").addEventListener("click",()=>{stopApplicantAutoRefresh();sessionStorage.removeItem("smx_admin");location.reload();});
   document.querySelectorAll(".nav-item").forEach(n=>n.addEventListener("click",()=>showView(n.dataset.view)));
   document.querySelectorAll("[data-go]").forEach(n=>n.addEventListener("click",()=>showView(n.dataset.go)));
   $("addJobBtn").addEventListener("click",()=>openJobEditor());
   $("jobEditorForm").addEventListener("submit",saveJobForm);
   $("applicantSearch").addEventListener("input",renderApplicants);
   $("applicantStatusFilter").addEventListener("change",renderApplicants);
+  $("refreshApplicantsBtn").addEventListener("click",()=>refreshApplicants({notifyNew:true,manual:true}));
   $("settingsForm").addEventListener("submit",saveSettingsForm);
   document.addEventListener("click",async e=>{
     if(e.target.matches("[data-close-job-editor]"))closeJobEditor();
@@ -173,5 +244,9 @@
   });
   $("adminDate").textContent=new Intl.DateTimeFormat("en-PH",{dateStyle:"full"}).format(new Date());
 
-  if(sessionStorage.getItem("smx_admin")==="1"){$("loginScreen").classList.add("hidden");$("adminApp").classList.remove("hidden");loadAll();}
+  if(sessionStorage.getItem("smx_admin")==="1"){
+    $("loginScreen").classList.add("hidden");
+    $("adminApp").classList.remove("hidden");
+    loadAll().then(startApplicantAutoRefresh);
+  }
 })();
